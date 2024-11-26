@@ -19,8 +19,9 @@ void pinball_load_settings(PinballApp& pb) {
     settings.led_enabled = true;
     settings.vibrate_enabled = true;
     settings.debug_mode = false;
+    settings.timeout_enabled = true;
     settings.selected_setting = 0;
-    settings.max_settings = 4;
+    settings.max_settings = 5;
 
     do {
         if(!flipper_format_file_open_existing(fff_settings, PINBALL_SETTINGS_PATH)) {
@@ -48,6 +49,9 @@ void pinball_load_settings(PinballApp& pb) {
         }
         if(flipper_format_read_uint32(fff_settings, "Debug", &tmp_data32, 1)) {
             settings.debug_mode = (tmp_data32 == 0) ? false : true;
+        }
+        if (flipper_format_read_uint32(fff_settings, "Timeout", &tmp_data32, 1)) {
+            settings.timeout_enabled = (tmp_data32 == 0) ? false : true;
         }
 
     } while(false);
@@ -91,6 +95,11 @@ void pinball_save_settings(PinballApp& pb) {
         tmp_data32 = settings.debug_mode ? 1 : 0;
         if(!flipper_format_write_uint32(fff_settings, "Debug", &tmp_data32, 1)) {
             FURI_LOG_E(TAG, "SETTINGS: Failed to write 'Debug'");
+            break;
+        }
+        tmp_data32 = settings.timeout_enabled ? 1 : 0;
+        if(!flipper_format_write_uint32(fff_settings, "Timeout", &tmp_data32, 1)) {
+            FURI_LOG_E(TAG, "SETTINGS: Failed to write 'Timeout'");
             break;
         }
     } while(false);

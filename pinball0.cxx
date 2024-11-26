@@ -286,12 +286,22 @@ static void pinball_draw_callback(Canvas* const canvas, void* ctx) {
         if(pb->settings.selected_setting == 3) {
             canvas_draw_triangle(canvas, 2, y + 3, 8, 5, CanvasDirectionLeftToRight);
         }
+        y += 12;
+
+        canvas_draw_str_aligned(canvas, 10, y, AlignLeft, AlignTop, "Timeout");
+        canvas_draw_circle(canvas, x, y + 3, 4);
+        if(pb->settings.timeout_enabled) {
+            canvas_draw_disc(canvas, x, y + 3, 2);
+        }
+        if(pb->settings.selected_setting == 4) {
+            canvas_draw_triangle(canvas, 2, y + 3, 8, 5, CanvasDirectionLeftToRight);
+        }
 
         // About information
-        canvas_draw_str_aligned(canvas, 2, 88, AlignLeft, AlignTop, "Pinball0 " VERSION);
-        canvas_draw_str_aligned(canvas, 2, 98, AlignLeft, AlignTop, "github.com/");
-        canvas_draw_str_aligned(canvas, 2, 108, AlignLeft, AlignTop, "  rdefeo/");
-        canvas_draw_str_aligned(canvas, 2, 118, AlignLeft, AlignTop, "    pinball0");
+        canvas_draw_str_aligned(canvas, 2, 98, AlignLeft, AlignTop, "Pinball0 " VERSION);
+        canvas_draw_str_aligned(canvas, 2, 108, AlignLeft, AlignTop, "github.com/");
+        canvas_draw_str_aligned(canvas, 2, 118, AlignLeft, AlignTop, "  rdefeo/");
+        canvas_draw_str_aligned(canvas, 2, 128, AlignLeft, AlignTop, "    pinball0");
 
         pb->table->draw(canvas);
     } break;
@@ -587,6 +597,9 @@ extern "C" int32_t pinball0_app(void* p) {
                         case 3:
                             app.settings.debug_mode = !app.settings.debug_mode;
                             break;
+                        case 4:
+                            app.settings.timeout_enabled = !app.settings.timeout_enabled;
+                            break;
                         default:
                             break;
                         }
@@ -633,7 +646,7 @@ extern "C" int32_t pinball0_app(void* p) {
 
         // game timing + idle check
         uint32_t current_tick = furi_get_tick();
-        if(current_tick - app.idle_start >= IDLE_TIMEOUT) {
+        if(app.settings.timeout_enabled && current_tick - app.idle_start >= IDLE_TIMEOUT) {
             FURI_LOG_W(TAG, "Idle timeout! Exiting Pinball0...");
             app.processing = false;
             break;

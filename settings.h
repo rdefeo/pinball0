@@ -5,6 +5,7 @@ typedef struct {
     bool vibrate_enabled;
     bool led_enabled;
     bool debug_mode;
+    bool timeout_enabled;
 
     int selected_setting;
     int max_settings;
