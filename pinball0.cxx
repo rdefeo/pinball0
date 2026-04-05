@@ -17,8 +17,8 @@
 #define PHYSICS_SUB_STEPS 5
 #define GAME_FPS          30
 #define MANUAL_ADJUSTMENT 20
-#define IDLE_TIMEOUT      120 * 1000 // 120 seconds * 1000 ticks/sec
-#define BUMP_COOLDOWN     1 * 1000 // 1 seconds
+#define IDLE_TIMEOUT      (120 * 1000) // 120 seconds * 1000 ticks/sec
+#define BUMP_COOLDOWN     (1 * 1000) // 1 seconds
 #define BUMP_MAX          3
 
 void solve(PinballApp* pb, float dt) {
@@ -43,34 +43,32 @@ void solve(PinballApp* pb, float dt) {
         // only needed for multi-ball! - is this true? what about flippers...
         for(size_t b1 = 0; b1 < table->balls.size(); b1++) {
             for(size_t b2 = b1 + 1; b2 < table->balls.size(); b2++) {
-                if(b1 != b2) {
-                    auto& ball1 = table->balls[b1];
-                    auto& ball2 = table->balls[b2];
+                auto& ball1 = table->balls[b1];
+                auto& ball2 = table->balls[b2];
 
-                    Vec2 axis = ball1.p - ball2.p;
-                    float dist2 = axis.mag2();
-                    float dist = sqrtf(dist2);
-                    float rr = ball1.r + ball2.r;
-                    if(dist < rr) {
-                        Vec2 v1 = ball1.p - ball1.prev_p;
-                        Vec2 v2 = ball2.p - ball2.prev_p;
+                Vec2 axis = ball1.p - ball2.p;
+                float dist2 = axis.mag2();
+                float dist = sqrtf(dist2);
+                float rr = ball1.r + ball2.r;
+                if(dist < rr) {
+                    Vec2 v1 = ball1.p - ball1.prev_p;
+                    Vec2 v2 = ball2.p - ball2.prev_p;
 
-                        float factor = (dist - rr) / dist;
-                        ball1.p -= axis * factor * 0.5f;
-                        ball2.p -= axis * factor * 0.5f;
+                    float factor = (dist - rr) / dist;
+                    ball1.p -= axis * factor * 0.5f;
+                    ball2.p -= axis * factor * 0.5f;
 
-                        float damping = 1.01f;
-                        float f1 = (damping * (axis.x * v1.x + axis.y * v1.y)) / dist2;
-                        float f2 = (damping * (axis.x * v2.x + axis.y * v2.y)) / dist2;
+                    float damping = 1.01f;
+                    float f1 = (damping * (axis.x * v1.x + axis.y * v1.y)) / dist2;
+                    float f2 = (damping * (axis.x * v2.x + axis.y * v2.y)) / dist2;
 
-                        v1.x += f2 * axis.x - f1 * axis.x;
-                        v2.x += f1 * axis.x - f2 * axis.x;
-                        v1.y += f2 * axis.y - f1 * axis.y;
-                        v2.y += f1 * axis.y - f2 * axis.y;
+                    v1.x += f2 * axis.x - f1 * axis.x;
+                    v2.x += f1 * axis.x - f2 * axis.x;
+                    v1.y += f2 * axis.y - f1 * axis.y;
+                    v2.y += f1 * axis.y - f2 * axis.y;
 
-                        ball1.prev_p = ball1.p - v1;
-                        ball2.prev_p = ball2.p - v2;
-                    }
+                    ball1.prev_p = ball1.p - v1;
+                    ball2.prev_p = ball2.p - v2;
                 }
             }
         }

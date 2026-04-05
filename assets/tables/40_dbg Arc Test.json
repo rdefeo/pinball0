@@ -4,7 +4,7 @@
     },
     "balls": [
         {
-            "position": [ 50, 140 ]
+            "position": [ 35, 340 ]
         }
     ],
     "arcs": [
@@ -12,7 +12,7 @@
             "position": [ 320, 800 ],
             "radius": 310,
             "start_angle": 90,
-            "end_angle": 360,
+            "end_angle": 370,
             "surface": "INSIDE"
         }
     ]

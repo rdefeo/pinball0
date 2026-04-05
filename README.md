@@ -33,7 +33,7 @@ Get the latest version:
 * **Ok** to release the ball
 * **Left** and **Right** to activate the left and right flippers
 * **Back** to return to the main menu or exit
-* **Up** to "bump" the table if the ball gets stuck. Table bumps are limited to 1 per second. if a table has `tilt_detect` enabled (default is `true`) then your 3rd table bump will tilt the machine and you'll lose the current ball!
+* **Up** to "bump" the table if the ball gets stuck. Table bumps are limited to 1 per second. If a table has `tilt_detect` enabled (default is `true`) then your 3rd table bump will tilt the machine and you'll lose the current ball!
 
 I find it easiest to hold the flipper with both hands so I can hit left/right with my thumbs!
 
@@ -53,14 +53,14 @@ Table units are specified at a 10x scale. This means our table is **630 x 1270**
 
 > There is some basic error checking when reading / parsing the table files. If the error is serious enough, you will see an error message in the app. Otherwise, check the console logs. For those familiar with `ufbt`, simply run `ufbt cli` and issue the `log` command. Then launch Pinball0. All informational and higher logs will be displayed. These logs are useful when reporting bugs/issues!
 
-These JSON elements are all defined at the top-level. The JSON can include comments - because why not!
+These JSON elements are all defined at the top-level. The JSON can include comment lines starting with `//`
 
 #### lives : object (optional)
-Defines how many lives/balls you start with, and display information
+Defines how many lives/balls you start with, and how/where to display that information
 
-* `"display": bool` : optional, defaults to false
-* `"position": [ X, Y ]`
-* `"value": N` : Number of balls - optional, defaults to 3
+* `"display": bool` : optional, defaults to `false`
+* `"position": [ X, Y ]` : optional, only used if display is true
+* `"value": N` : Number of balls - optional, defaults to `3`
 * `"align": A` : optional, defaults to `"HORIZONTAL"` (also, `"VERTICAL"`)
 
 #### balls : list of objects
@@ -85,41 +85,46 @@ You can have more than 2 flippers! Try it!
 
 #### bumpers : list of objects (optional)
 * `"position": [ X, Y ]`
-* `"radius": [ N ]` : optional, defaults to `40`
+* `"radius": N` : optional, defaults to `40`
+* `"bounce": N` : optional, defaults to `1.2` which imparts an extra 20% bounce. Less than 1.0 dampens the bounce.
+* `"physical": bool` : optional, defaults to `true`. If `false`, then ball will not collide with the bumper
+* `"hidden": bool` : optional, defaults to `false`. If `true`, will not be drawn but can be hit by ball
 
 #### rails : list of objects (optional)
 * `"start": [ X, Y ]`
 * `"end": [ X, Y ]`
 * `"double_sided": bool` : optional, defaults to `false`
+* `"bounce": N` : optional, defaults to `0.9` - slightly dampening the bounce effect
 
-The "surface" of a rail is "on the left" as we move from the `"start"` to the `"end"`. This means that when thinking about your table, the outer perimiter should be defined in a counter-clockwise order. Arriving at a rail from it's revrese side will result in a pass-through - think of it as a one-way mirror.
+The "surface" of a rail is "on the left" as we move from the `"start"` to the `"end"`. This means that when thinking about your table, the outer perimiter should be defined in a counter-clockwise order. Arriving at a rail from it's reverse side will result in a pass-through - think of it as a one-way mirror. Setting `double_sided` to `true` will make it solid on both sides.
 
 #### arcs : list of objects (optional)
 * `"position": [ X, Y ]`
 * `"radius" : N`
 * `"start_angle": N` : in degrees from 0 to 360
 * `"end_angle": N` : in degreens from 0 to 360
-* `"surface": S` : valid values are `"INSIDE"` or `"OUTSIDE"`
+* `"surface": S` : valid values are `"INSIDE"` or `"OUTSIDE"`, defaults to OUTSIDE
+* `"bounce": N` : optional, defaults to 1.0 - perfectly elastic bounce
 
 Start and End angles should be specified in **counter-clockwise** order. The **surface** defines which side will bounce/reflect.
 
 #### rollovers : list of objects (optional)
 * `"position": [ X, Y ]`
-* `"symbol": C` : where C is a string representing a single character, like `"Z"`
+* `"symbol": C` : where C is a quoted string representing a single character, like `"Z"`
 
 When the ball passes over/through a rollover object, the symbol will appear. Only the first character of the string is used.
 
 #### portals : list of objects (optional)
-* `"a_start": [ X, Y]`
-* `"a_end": [ X, Y]`
-* `"b_start": [ X, Y]`
-* `"b_end": [ X, Y]`
+* `"a_start": [ X, Y ]`
+* `"a_end": [ X, Y ]`
+* `"b_start": [ X, Y ]`
+* `"b_end": [ X, Y ]`
 
 Defines two portals, **a** and **b**. They are bi-drectional. Like rails, their "surface" - or in this case, their "entry surface" - is "on the left" from their respective start to end direction. You can't "enter" a portal from it's reverse side, you will pass through.
 
 #### turbos : list of objects (optional)
 * `"position": [ X, Y ]`
-* `"angle": N` : in degrees from 0 to 360
+* `"angle": N` : in degrees from 0 to 360, with 0 being due East (to the right) and 90 due North (up)
 * `"boost": N` : optional, defaults to `5`
 * `"radius" : N` : optional, defaults to `20`
 
@@ -130,7 +135,7 @@ When the ball hits a turbo boost, it will force the new velocity to be in the di
 * `"rx": N` : id to receive
 * `"any": bool` : signal trigger type, defaults to `false` (i.e. "all")
 
-Can be added to a **bumper** or **rollover** to send notifications of collisions. When defining a signal, you can define a `tx` or a `rx` or both. The id value can be any number. If you add a `"tx": 4` to a rollover, when the ball collides with the rollover, it will trigger a signal to any object that has a `"rx": 4` defined.
+Can be added to a **bumper** or **rollover** to send notifications of collisions. When defining a signal, you can define a **transmitter** id `tx` or a **receiver** id `rx` or both. The id value can be any number. If you add `"tx": 4` to a rollover, when the ball collides with the rollover, it will trigger a signal to any object that has a `"rx": 4` defined.
 
 The `"any"` bool will determine __when__ to send the signal. Let's look at an example:
 

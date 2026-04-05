@@ -238,6 +238,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
     Table* table = new Table();
 
     do {
+        // LIVES
         const nx_json* lives = nx_json_get(json, "lives");
         if(lives) {
             table_file_parse_int(lives, "value", table->lives.value);
@@ -248,16 +249,18 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
                 table->lives.alignment = Lives::Vertical;
             }
         }
+        // TILT DETECT
         const nx_json* tilt = nx_json_get(json, "tilt_detect");
         if(tilt) {
             table->tilt_detect_enabled = tilt->num.u_value > 0 ? true : false;
         }
+        // SCORE
         const nx_json* score = nx_json_get(json, "score");
         if(score) {
             table_file_parse_bool(score, "display", table->score.display);
             table_file_parse_vec2(score, "position", table->score.p);
         }
-
+        // BALLS
         const nx_json* balls = nx_json_get(json, "balls");
         if(balls) {
             for(int i = 0; i < balls->children.length; i++) {
@@ -296,6 +299,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             break;
         }
 
+        // PLUNGER
         // TODO: plungers need work
         const nx_json* plunger = nx_json_get(json, "plunger");
         if(plunger) {
@@ -309,6 +313,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
                 TAG, "Table has NO PLUNGER - s'ok, we don't really support one anyway (yet)");
         }
 
+        // FLIPPERS
         const nx_json* flippers = nx_json_get(json, "flippers");
         if(flippers) {
             for(int i = 0; i < flippers->children.length; i++) {
@@ -341,6 +346,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // BUMPERS
         const nx_json* bumpers = nx_json_get(json, "bumpers");
         if(bumpers) {
             for(int i = 0; i < bumpers->children.length; i++) {
@@ -383,6 +389,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // ARCS
         constexpr float pi_180 = M_PI / 180;
         const nx_json* arcs = nx_json_get(json, "arcs");
         if(arcs) {
@@ -405,7 +412,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
                 int r = DEF_BUMPER_RADIUS;
                 table_file_parse_int(arc, "radius", r);
 
-                float bnc = 0.95f; // DEF_BUMPER_BOUNCE?
+                float bnc = 1.0f; // DEF_BUMPER_BOUNCE?
                 table_file_parse_float(arc, "bounce", bnc);
 
                 float start_angle = 0.0;
@@ -427,6 +434,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // RAILS
         const nx_json* rails = nx_json_get(json, "rails");
         if(rails) {
             for(int i = 0; i < rails->children.length; i++) {
@@ -484,6 +492,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // PORTALS
         const nx_json* portals = nx_json_get(json, "portals");
         if(portals) {
             for(int i = 0; i < portals->children.length; i++) {
@@ -545,6 +554,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // ROLLOVERS
         const nx_json* rollovers = nx_json_get(json, "rollovers");
         if(rollovers) {
             for(int i = 0; i < rollovers->children.length; i++) {
@@ -575,6 +585,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
             }
         }
 
+        // TURBOS
         const nx_json* turbos = nx_json_get(json, "turbos");
         if(turbos) {
             for(int i = 0; i < turbos->children.length; i++) {
@@ -614,7 +625,7 @@ Table* table_load_table_from_file(PinballApp* pb, size_t index) {
 
     } while(false);
 
-    if(!table->sm.validate(pb->text, 256)) {
+    if(table && !table->sm.validate(pb->text, 256)) {
         FURI_LOG_E(TAG, "Signal validation failed!");
         delete table;
         table = NULL;

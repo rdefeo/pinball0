@@ -102,7 +102,7 @@ bool SignalManager::validate(char* err, std::size_t err_size) {
     for(const auto& signal : signals) {
         const SignalType signal_type = ((FixedObject*)signal.ctx)->tx_type;
         for(const auto& s : signals) {
-            FixedObject* s_obj = (FixedObject*)signal.ctx;
+            FixedObject* s_obj = (FixedObject*)s.ctx;
             if(signal.id == s.id && signal_type != s_obj->tx_type) {
                 valid_types = false;
                 FURI_LOG_E("PB0 SIGNAL", "Signal %d has differing type!", s.id);

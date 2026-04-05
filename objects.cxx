@@ -20,11 +20,23 @@ void Object::update(float dt) {
     if(fixed) {
         return;
     }
+
+    // This is incorrect! By adding the scalar dt^2 to our position
+    // we are adding a small drift down and to the right
     Vec2 velocity = p - prev_p;
     // table friction / damping
     velocity *= 0.9999f;
     prev_p = p;
     p = p + velocity + a + (dt * dt);
+
+    // This is more correct Verlet integration. However, multiplying
+    // dt^2 (a very tiny number) to our acceleration means we need to
+    // start our ball with an incredibly high value, around 200,000
+
+    // Vec2 old_p = p;
+    // p.x = 2 * p.x - prev_p.x + a.x * dt * dt;
+    // p.y = 2 * p.y - prev_p.y + a.y * dt * dt;
+    // prev_p = old_p;
     a = {0.0, 0.0};
 }
 
@@ -40,6 +52,7 @@ Flipper::Flipper(const Vec2& p_, Side side_, size_t size_)
     , max_rotation(1.0f)
     , omega(4.0f)
     , rotation(0.0f)
+    , current_omega(0.0f)
     , powered(false)
     , score(50)
     , notification(nullptr) {
@@ -427,17 +440,22 @@ float vector_to_angle(float x, float y) {
         return (y > 0) ? M_PI_2 : (y == 0) ? 0 : M_PI + M_PI_2;
     else if(y == 0) // special cases LEFT or RIGHT
         return (x >= 0) ? 0 : M_PI;
+    // quadrants
+    //   II  |  I
+    //  -----+-----
+    //   III |  IV
     float ret = atanf(y / x); // quadrant I
     if(x < 0 && y < 0) // quadrant III
         ret = (float)M_PI + ret;
     else if(x < 0) // quadrant II
-        ret = (float)M_PI + ret; // it actually substracts
+        ret = (float)M_PI + ret; // it actually subtracts
     else if(y < 0) // quadrant IV
-        ret = (float)M_PI + (float)M_PI_2 + ((float)M_PI_2 + ret); // it actually substracts
+        ret = (float)M_PI + (float)M_PI_2 + ((float)M_PI_2 + ret); // it actually subtracts
     return ret;
 }
 
 // Matthias research - 10 minute physics
+// have we deviated from that reference?
 bool Arc::collide(Ball& ball) {
     Vec2 dir = ball.p - p;
     float dist = dir.mag();
@@ -449,41 +467,38 @@ bool Arc::collide(Ball& ball) {
     //     (double)p.x,
     //     (double)p.y);
     // FURI_LOG_I(TAG, "dir: %.3f,%.3f  dist: %.3f", (double)dir.x, (double)dir.y, (double)dist);
+    Vec2 ball_v = ball.p - ball.prev_p;
 
+    // For both outside and inside, we check if we're near the arc
+    // and then check if were moving towards the surface
     if(surface == OUTSIDE) {
-        if(dist > r + ball.r) {
-            return false;
-        }
-        // FURI_LOG_I(TAG, "hitting arc");
-        float angle = vector_to_angle(dir.x, -dir.y);
-        if((start < end && start <= angle && angle <= end) ||
-           (start > end && (angle >= start || angle <= end))) {
-            // FURI_LOG_I(TAG, "colliding with arc");
-            dir.normalize();
+        if(dist < r + ball.r && dist > r && ball_v.dot(dir) < 0.0f) {
+            // FURI_LOG_I(TAG, "hitting arc");
+            float angle = vector_to_angle(dir.x, -dir.y);
+            if((start < end && start <= angle && angle <= end) ||
+               (start > end && (angle >= start || angle <= end))) {
+                // FURI_LOG_I(TAG, "colliding with arc");
+                dir.normalize();
 
-            Vec2 ball_v = ball.p - ball.prev_p;
-            float corr = ball.r + r - dist;
-            ball.p += dir * corr;
-            float v = ball_v.dot(dir);
-            ball_v += dir * (3.0f - v); // TODO: pushVel, this should be a prop
-            ball.prev_p = ball.p - ball_v;
-            return true;
+                Vec2 ball_v = ball.p - ball.prev_p;
+                float corr = ball.r + r - dist;
+                ball.p += dir * corr;
+                float v = ball_v.dot(dir);
+                ball_v += dir * (3.0f - v); // TODO: pushVel, this should be a prop
+                ball.prev_p = ball.p - ball_v;
+                return true;
+            }
         }
     }
     if(surface == INSIDE) {
-        Vec2 prev_dir = ball.prev_p - p;
-        float prev_dist = prev_dir.mag();
-        if(prev_dist < r && dist + ball.r > r) {
+        if(dist + ball.r > r && dist < r && ball_v.dot(dir) > 0.0f) {
             // FURI_LOG_I(TAG, "Inside an arc!");
             float angle = vector_to_angle(dir.x, -dir.y);
             // FURI_LOG_I(TAG, "%f : %f : %f", (double)start, (double)angle, (double)end);
-            // if(angle >= start && angle <= end) {
             if((start < end && start <= angle && angle <= end) ||
                (start > end && (angle >= start || angle <= end))) {
                 // FURI_LOG_I(TAG, "Within the arc angle");
-
                 dir.normalize();
-                Vec2 ball_v = ball.p - ball.prev_p;
 
                 // correct our position to be "on" the arc
                 float corr = dist + ball.r - r;

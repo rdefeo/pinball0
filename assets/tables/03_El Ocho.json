@@ -48,14 +48,14 @@
             "radius": 80,
             "start_angle": 180,
             "end_angle": 360,
-            "bounce": 1.1
+            "bounce": 1.5
         },
         {
             "position": [ 320, 920 ],
             "radius": 80,
             "start_angle": 0,
             "end_angle": 180,
-            "bounce": 1.1
+            "bounce": 1.5
         }
 
     ],

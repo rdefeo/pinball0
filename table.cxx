@@ -93,7 +93,7 @@ Table* table_init_table_select(void* ctx) {
     table->balls_released = true;
 
     Polygon* new_rail = new Polygon();
-    new_rail->add_point({-1, 840});
+    new_rail->add_point({-1, -1});
     new_rail->add_point({-1, 1280});
     new_rail->finalize();
     new_rail->hidden = true;
@@ -108,7 +108,14 @@ Table* table_init_table_select(void* ctx) {
 
     new_rail = new Polygon();
     new_rail->add_point({640, 1280});
-    new_rail->add_point({640, 840});
+    new_rail->add_point({640, -1});
+    new_rail->finalize();
+    new_rail->hidden = true;
+    table->objects.push_back(new_rail);
+
+    new_rail = new Polygon();
+    new_rail->add_point({-1, -1});
+    new_rail->add_point({640, -1});
     new_rail->finalize();
     new_rail->hidden = true;
     table->objects.push_back(new_rail);

@@ -158,6 +158,7 @@ void drawThickLine(
 
     if(aThickness <= 1) {
         drawLineOverlap(canvas, aXStart, aYStart, aXEnd, aYEnd, LINE_OVERLAP_NONE);
+        return;
     }
     /*
      * Clip to display size
